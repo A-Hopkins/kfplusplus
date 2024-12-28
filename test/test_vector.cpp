@@ -6,15 +6,15 @@ TEST(VectorTest, Creation)
 {
   linalg::Vector v1(3);
   EXPECT_EQ(v1.size(), 3);
-  EXPECT_EQ(v1[0], 0.0);
-  EXPECT_EQ(v1[1], 0.0);
-  EXPECT_EQ(v1[2], 0.0);
+  EXPECT_EQ(v1(0), 0.0);
+  EXPECT_EQ(v1(1), 0.0);
+  EXPECT_EQ(v1(2), 0.0);
 
   linalg::Vector v2({1.0, 2.0, 3.0});
   EXPECT_EQ(v2.size(), 3);
-  EXPECT_EQ(v2[0], 1.0);
-  EXPECT_EQ(v2[1], 2.0);
-  EXPECT_EQ(v2[2], 3.0);
+  EXPECT_EQ(v2(0), 1.0);
+  EXPECT_EQ(v2(1), 2.0);
+  EXPECT_EQ(v2(2), 3.0);
 }
 
 TEST(VectorTest, Addition)
@@ -24,9 +24,9 @@ TEST(VectorTest, Addition)
   linalg::Vector result = v1 + v2;
 
   ASSERT_EQ(result.size(), 3);
-  EXPECT_EQ(result[0], 5.0);
-  EXPECT_EQ(result[1], 7.0);
-  EXPECT_EQ(result[2], 9.0);
+  EXPECT_EQ(result(0), 5.0);
+  EXPECT_EQ(result(1), 7.0);
+  EXPECT_EQ(result(2), 9.0);
 }
 
 TEST(VectorTest, InPlaceAddition)
@@ -36,9 +36,9 @@ TEST(VectorTest, InPlaceAddition)
   v1 += v2;
 
   ASSERT_EQ(v1.size(), 3);
-  EXPECT_EQ(v1[0], 5.0);
-  EXPECT_EQ(v1[1], 7.0);
-  EXPECT_EQ(v1[2], 9.0);
+  EXPECT_EQ(v1(0), 5.0);
+  EXPECT_EQ(v1(1), 7.0);
+  EXPECT_EQ(v1(2), 9.0);
 }
 
 TEST(VectorTest, Subtraction)
@@ -48,9 +48,9 @@ TEST(VectorTest, Subtraction)
   linalg::Vector result = v1 - v2;
 
   ASSERT_EQ(result.size(), 3);
-  EXPECT_EQ(result[0], -3.0);
-  EXPECT_EQ(result[1], -3.0);
-  EXPECT_EQ(result[2], -3.0);
+  EXPECT_EQ(result(0), -3.0);
+  EXPECT_EQ(result(1), -3.0);
+  EXPECT_EQ(result(2), -3.0);
 }
 
 TEST(VectorTest, InPlaceSubtraction)
@@ -60,9 +60,22 @@ TEST(VectorTest, InPlaceSubtraction)
   v1 -= v2;
 
   ASSERT_EQ(v1.size(), 3);
-  EXPECT_EQ(v1[0], -3.0);
-  EXPECT_EQ(v1[1], -3.0);
-  EXPECT_EQ(v1[2], -3.0);
+  EXPECT_EQ(v1(0), -3.0);
+  EXPECT_EQ(v1(1), -3.0);
+  EXPECT_EQ(v1(2), -3.0);
+}
+
+TEST(VectorTest, ScalarMultiplication)
+{
+  linalg::Vector v({1.0, 2.0, 3.0});
+  double scalar = 3.0;
+  linalg::Vector expected({3.0, 6.0, 9.0});
+  linalg::Vector result = v * scalar;
+
+  ASSERT_EQ(v.size(), 3);
+  EXPECT_EQ(result(0), expected(0));
+  EXPECT_EQ(result(1), expected(1));
+  EXPECT_EQ(result(2), expected(2));
 }
 
 TEST(VectorTest, DotProduct)

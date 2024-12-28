@@ -7,7 +7,7 @@
 namespace linalg
 {
 
-  double& Vector::operator[](int index)
+  double& Vector::operator()(unsigned int index)
   {
     if (index < 0 || index >= size())
     {
@@ -17,7 +17,7 @@ namespace linalg
     return data[index];
   }
   
-  const double& Vector::operator[](int index) const
+  const double& Vector::operator()(unsigned int index) const
   {
     if (index < 0 || index >= size())
     {
@@ -38,7 +38,7 @@ namespace linalg
 
     for (int i = 0; i < size(); ++i)
     {
-      result[i] = data[i] + other[i];
+      result(i) = data[i] + other(i);
     }
     return result;
   }
@@ -52,7 +52,7 @@ namespace linalg
 
           for (int i = 0; i < size(); ++i)
           {
-              data[i] += other[i];
+              data[i] += other(i);
           }
           return *this;
   }
@@ -68,7 +68,7 @@ namespace linalg
 
     for (int i = 0; i < size(); ++i)
     {
-      result[i] = data[i] - other[i];
+      result(i) = data[i] - other(i);
     }
     return result;
   }
@@ -82,14 +82,28 @@ namespace linalg
 
           for (int i = 0; i < size(); ++i)
           {
-              data[i] -= other[i];
+              data[i] -= other(i);
           }
           return *this;
   }
 
-  int Vector::size() const
+  Vector Vector::operator*(double scalar) const
   {
-    return data.size();
+    Vector result(size());
+
+    for (int i = 0; i < size(); ++i)
+    {
+      result(i) = (*this)(i) * scalar;
+    }
+    return result;
+  }
+
+  Vector& Vector::operator*=(double scalar)
+  {
+    for (int i = 0; i < size(); ++i)
+    {
+      (*this)(i) *= scalar;
+    }
   }
 
   double Vector::dot(const Vector& other) const
@@ -102,7 +116,7 @@ namespace linalg
     double result = 0.0;
     for (int i = 0; i < size(); ++i)
     {
-        result += data[i] * other[i];
+        result += data[i] * other(i);
     }
 
     return result;

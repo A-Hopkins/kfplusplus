@@ -3,7 +3,7 @@
 
 namespace kfplusplus
 {
-  void KalmanFilter::predict(const linalg::Vector &control = linalg::Vector(0))
+  void KalmanFilter::predict(const linalg::Vector &control)
   {
     // Predict state: x = F * x + B * u
     if (control.size() == state_dim)

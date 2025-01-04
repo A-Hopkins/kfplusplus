@@ -1,0 +1,3 @@
+add_executable(linear_kf_no_control_example linear_kf_no_control_example.cpp)
+
+target_link_libraries(linear_kf_no_control_example PRIVATE kfplusplus)

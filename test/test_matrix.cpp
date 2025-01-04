@@ -137,6 +137,38 @@ TEST(MatrixTest, VectorMultiplication)
   }
 }
 
+TEST(MatrixTest, ScalarMultiplication)
+{
+  linalg::Matrix mat({ {1.0, 2.0},
+                       {3.0, 4.0} });
+
+  double scalar = 2.0;
+  linalg::Matrix expected({ {2.0, 4.0},
+                            {6.0, 8.0} });
+
+  linalg::Matrix result = mat * scalar;
+
+  EXPECT_EQ(result.row_size(), expected.row_size());
+  EXPECT_EQ(result.col_size(), expected.col_size());
+
+  for (unsigned int i = 0; i < result.row_size(); ++i)
+  {
+    for (unsigned int j = 0; j < result.col_size(); ++j)
+    {
+      EXPECT_EQ(result(i, j), expected(i, j));
+    }
+  }
+
+  mat *= scalar;
+  for (unsigned int i = 0; i < mat.row_size(); ++i)
+  {
+    for (unsigned int j = 0; j < mat.col_size(); ++j)
+    {
+      EXPECT_EQ(mat(i, j), expected(i, j));
+    }
+  }
+}
+
 TEST(MatrixTest, Transpose)
 {
   linalg::Matrix mat1({ {4.0, 4.0},

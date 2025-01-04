@@ -266,6 +266,20 @@ namespace linalg
     Vector operator*(const Vector& vec) const;
 
     /**
+     * @brief Multiplies the matrix by a scalar.
+     * @param scalar The scalar value to multiply.
+     * @return A new matrix scaled by the scalar.
+     */
+    Matrix operator*(double scalar) const;
+
+    /**
+     * @brief Performs in-place scalar multiplication.
+     * @param scalar The scalar value to multiply.
+     * @return A reference to the modified vector.
+     */
+    Matrix& operator*=(double scalar);
+
+    /**
      * @brief Computes the transpose of the matrix.
      * @return The transposed matrix.
      */

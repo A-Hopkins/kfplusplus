@@ -176,6 +176,31 @@ namespace linalg
     return result;
   }
 
+  Matrix Matrix::operator*(double scalar) const
+  {
+    Matrix result(rows, cols);
+    for (unsigned int i = 0; i < rows; ++i)
+    {
+      for (unsigned int j = 0; j < cols; ++j)
+      {
+        result(i, j) = (*this)(i, j) * scalar;
+      }
+    }
+    return result;
+  }
+
+  Matrix& Matrix::operator*=(double scalar)
+  {
+    for (unsigned int i = 0; i < rows; ++i)
+    {
+      for (unsigned int j = 0; j < cols; ++j)
+      {
+        (*this)(i, j) *= scalar;
+      }
+    }
+    return *this;
+  }
+
   Matrix Matrix::transpose() const
   {
     Matrix result(cols, rows);

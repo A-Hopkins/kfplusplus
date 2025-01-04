@@ -11,7 +11,7 @@ namespace linalg
   {
     if (index < 0 || index >= size())
     {
-        throw std::out_of_range("Index out of bounds");
+      throw std::out_of_range("Index out of bounds");
     }
 
     return data[index];
@@ -21,7 +21,7 @@ namespace linalg
   {
     if (index < 0 || index >= size())
     {
-        throw std::out_of_range("Index out of bounds");
+      throw std::out_of_range("Index out of bounds");
     }
 
     return data[index];
@@ -45,16 +45,16 @@ namespace linalg
 
   Vector& Vector::operator+=(const Vector& other)
   {
-          if (size() != other.size())
-          {
-              throw std::invalid_argument("Vector sizes do not match");
-          }
+    if (size() != other.size())
+    {
+      throw std::invalid_argument("Vector sizes do not match");
+    }
 
-          for (int i = 0; i < size(); ++i)
-          {
-              data[i] += other(i);
-          }
-          return *this;
+    for (int i = 0; i < size(); ++i)
+    {
+      data[i] += other(i);
+    }
+    return *this;
   }
 
   Vector Vector::operator-(const Vector& other) const
@@ -75,16 +75,16 @@ namespace linalg
 
   Vector& Vector::operator-=(const Vector& other)
   {
-          if (size() != other.size())
-          {
-              throw std::invalid_argument("Vector sizes do not match");
-          }
+    if (size() != other.size())
+    {
+      throw std::invalid_argument("Vector sizes do not match");
+    }
 
-          for (int i = 0; i < size(); ++i)
-          {
-              data[i] -= other(i);
-          }
-          return *this;
+    for (int i = 0; i < size(); ++i)
+    {
+      data[i] -= other(i);
+    }
+    return *this;
   }
 
   Vector Vector::operator*(double scalar) const
@@ -104,6 +104,7 @@ namespace linalg
     {
       (*this)(i) *= scalar;
     }
+    return *this;
   }
 
   double Vector::dot(const Vector& other) const

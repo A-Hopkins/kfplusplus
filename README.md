@@ -13,9 +13,9 @@ This project implements a **Linear Algebra Library** and a **Kalman Filter** mod
 
 - **Matrices**:
   - Creation from initializer lists or specified dimensions.
-  - Basic operations: addition, subtraction, multiplication (matrix-matrix and matrix-vector).
+  - Basic operations: addition, subtraction, multiplication (matrix-matrix, matrix-vector, scalars).
   - Determinant, transpose, and inversion functionalities.
-  - Access and modification of elements using `operator()`.
+  - Access and modification of elements using `operator()` [per this instruction](https://isocpp.org/wiki/faq/operator-overloading#matrix-array-of-array).
   - Identity matrix generation.
   - Printing for visualization.
 
@@ -94,7 +94,6 @@ state.print();
 ## Future additions
 
 - Create an Extended Kalman Filter (EKF) extension.
-- Add more comprehensive examples.
 - Develop Kalman filter analysis tools.
 
 ## License

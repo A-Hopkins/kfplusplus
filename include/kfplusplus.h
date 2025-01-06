@@ -98,6 +98,18 @@ namespace kfplusplus
     const linalg::Matrix &get_covariance() const { return covariance; }
 
     /**
+     * @brief Sets the state vector.
+     * @param state_vector The new state vector
+     */
+    void set_state(const linalg::Vector &state) { this->state = state; }
+
+    /**
+     * @brief Sets the covariance matrix.
+     * @param covariance_matrix The new covariance matrix.
+     */
+    void set_covariance(const linalg::Matrix &covariance_matrix) { this->covariance = covariance_matrix; }
+
+    /**
      * @brief Sets the state transition matrix.
      * @param transition_matrix The new state transition matrix.
      */

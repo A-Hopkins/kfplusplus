@@ -1,4 +1,3 @@
-#include <iostream>
 #include "kfplusplus.h"
 
 namespace kfplusplus
@@ -21,20 +20,20 @@ namespace kfplusplus
 
   void KalmanFilter::update(const linalg::Vector &measurement)
   {
-    // innovation y = z - Hx
+    // Innovation y = z - Hx
     linalg::Vector y = measurement - measurement_matrix * state;
     linalg::Matrix ht = measurement_matrix.transpose();
 
-    // predictied covariance mapped to measurement space: P * H^T
+    // Predictied covariance mapped to measurement space: P * H^T
     linalg::Matrix predicted_covariance = covariance * ht;
 
-    // innovation covariance S = H * P * H^T + R
-    linalg::Matrix innovation_covariance = measurement_matrix * covariance * ht + measurement_noise;
+    // Innovation covariance S = H * P * H^T + R
+    linalg::Matrix innovation_covariance = measurement_matrix * predicted_covariance + measurement_noise;
 
     // Kalman gain: K = P * H^T * (H * P * H^T + R)^-1
     linalg::Matrix gain = predicted_covariance * innovation_covariance.invert();
 
-    // Update state: x = x + K * (z - h * x)
+    // Update state: x = x + K * y
     state = state + (gain * y);
 
     // Update covariance: P = (I - K * H) * P

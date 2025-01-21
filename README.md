@@ -20,12 +20,16 @@ This project implements a **Linear Algebra Library** and a **Kalman Filter** mod
   - Printing for visualization.
 
 ### Kalman Filter
+#### Linear Kalman Filter
 - Linear Kalman filter implementation for state estimation.
 - Configurable state, measurement, and control dimensions.
 - Supports:
   - Prediction step with or without control input.
   - Update step with measurement input.
   - Adjustable process and measurement noise covariance matrices.
+#### Extended Kalman Filter
+- Extends the linear Kalman filter to handle non-linear systems.
+- Incorporates non-linear measurement functions and their Jacobians.
 
 ## Getting Started
 ### Prerequisites
@@ -84,16 +88,31 @@ const linalg::Vector &state = kf.get_state();
 state.print();
 ```
 
+#### Extended Kalman Filter
+```cpp
+kfplusplus::ExtendedKalmanFilter ekf(4, 2);
+auto measurement_function = [](const linalg::Vector& state) {
+  // Non-linear measurement function example
+  return linalg::Vector({state(0), state(1)});
+};
+auto jacobian_measurement = [](const linalg::Vector& state) {
+  // Jacobian matrix of the measurement function
+  return linalg::Matrix({{1.0, 0.0, 0.0, 0.0}, {0.0, 1.0, 0.0, 0.0}});
+};
+linalg::Vector measurement({5.0, 2.0});
+ekf.update(measurement, measurement_function, jacobian_measurement);
+```
+
 ## Project Structure
-- `linalg.h` and `linalg.cpp`: Linear Algebra Library implementation.
-- `kfplusplus.h` and `linear_kf.cpp`: Kalman Filter implementation.
+- `linalg.h` and `vector.cpp`, `matrix.cpp`: Linear Algebra Library implementation.
+- `kfplusplus.h` and `linear_kf.cpp`, `extended_kf.cpp`: Kalman and Extended Kalman Filters.
 - `test_vector.cpp` and `test_matrix.cpp`: Unit tests for vectors and matrices.
+- `examples/` folder includes examples for kalman filters
 - `CMakeLists.txt`: Build configuration.
 - `CMakePresets.json`: Presets for building with GCC.
 
 ## Future additions
 
-- Create an Extended Kalman Filter (EKF) extension.
 - Develop Kalman filter analysis tools.
 
 ## License

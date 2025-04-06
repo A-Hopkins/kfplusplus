@@ -4,8 +4,8 @@ project(kfplusplus VERSION 0.1.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-add_library(kfplusplus src/extended_kf.cpp src/linear_kf.cpp src/vector.cpp src/matrix.cpp)
-target_include_directories(kfplusplus PUBLIC include)
+add_library(kfplusplus INTERFACE)
+target_include_directories(kfplusplus INTERFACE include)
 
 include(FetchContent)
 FetchContent_Declare(

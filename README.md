@@ -3,21 +3,28 @@
 ## Overview
 This project implements a **Linear Algebra Library** and a **Kalman Filter** module. The linear algebra library provides operations for vectors and matrices, while the Kalman filter facilitates state estimation in linear dynamic systems.
 
+## Design Features
+- **Zero Dynamic Memory Allocation**: Uses compile-time dimensions with C++ templates
+- **Memory-Safe Operations**: No heap allocations, no exceptions, no memory leaks
+- **Compile-Time Checking**: Uses static assertions to validate dimensions at compile time
+- **Header-Only Implementation**: Easy integration with other projects
+
 ## Features
 ### Linear Algebra Library
 - **Vectors**:
-  - Creation from initializer lists or predefined size.
-  - Basic operations: addition, subtraction, scalar multiplication, dot product.
-  - Access and modification of elements using `operator()`.
-  - Printing for visualization.
+  - Fixed-size vectors defined at compile time
+  - Basic operations: addition, subtraction, scalar multiplication, dot product
+  - Access and modification of elements using `operator()`
+  - No dynamic memory allocation
 
 - **Matrices**:
-  - Creation from initializer lists or specified dimensions.
-  - Basic operations: addition, subtraction, multiplication (matrix-matrix, matrix-vector, scalars).
-  - Determinant, transpose, and inversion functionalities.
+  - Fixed-size matrices defined at compile time
+  - Basic operations: addition, subtraction, multiplication (matrix-matrix, matrix-vector, scalars)
+  - Determinant, transpose, and inversion functionalities
   - Access and modification of elements using `operator()` [per this instruction](https://isocpp.org/wiki/faq/operator-overloading#matrix-array-of-array).
   - Identity matrix generation.
   - Printing for visualization.
+  - No dynamic memory allocation
 
 ### Kalman Filter
 #### Linear Kalman Filter
@@ -30,6 +37,7 @@ This project implements a **Linear Algebra Library** and a **Kalman Filter** mod
 #### Extended Kalman Filter
 - Extends the linear Kalman filter to handle non-linear systems.
 - Incorporates non-linear measurement functions and their Jacobians.
+- Compile-time size checking for all operations
 
 ## Getting Started
 ### Prerequisites
@@ -60,19 +68,17 @@ ctest
 ### Examples
 #### Vector Operations
 ```cpp
-linalg::Vector vec1({1.0, 2.0, 3.0});
-linalg::Vector vec2({4.0, 5.0, 6.0});
-linalg::Vector result = vec1 + vec2;
-result.print();
+linalg::Vector<3> vec1({1.0, 2.0, 3.0});
+linalg::Vector<3> vec2({4.0, 5.0, 6.0});
+linalg::Vector<3> result = vec1 + vec2;
 // Output: 5.0 7.0 9.0
 ```
 
 #### Matrix Operations
 ```cpp
-linalg::Matrix mat({{1.0, 2.0}, {3.0, 4.0}});
-linalg::Matrix identity = linalg::Matrix::identity(2);
-linalg::Matrix result = mat * identity;
-result.print();
+linalg::Matrix<2, 2> mat({{1.0, 2.0}, {3.0, 4.0}});
+linalg::Matrix<2, 2> identity = linalg::Matrix<2, 2>::identity();
+linalg::Matrix<2, 2> result = mat * identity;
 // Output:
 // 1.0 2.0
 // 3.0 4.0
@@ -80,39 +86,56 @@ result.print();
 
 #### Kalman Filter
 ```cpp
-kfplusplus::KalmanFilter kf(4, 2);
-kf.set_transition(linalg::Matrix({{1.0, 0.0, 0.1, 0.0}, {0.0, 1.0, 0.0, 0.1}, {0.0, 0.0, 1.0, 0.0}, {0.0, 0.0, 0.0, 1.0}}));
-linalg::Vector measurement({5.0, 2.0});
+constexpr size_t STATE_DIM = 4;
+constexpr size_t MEASUREMENT_DIM = 2;
+
+kfplusplus::KalmanFilter<STATE_DIM, MEASUREMENT_DIM> kf;
+linalg::Matrix<STATE_DIM, STATE_DIM> transition({
+    {1.0, 0.0, 0.1, 0.0}, 
+    {0.0, 1.0, 0.0, 0.1}, 
+    {0.0, 0.0, 1.0, 0.0}, 
+    {0.0, 0.0, 0.0, 1.0}
+});
+kf.set_transition(transition);
+
+linalg::Vector<MEASUREMENT_DIM> measurement({5.0, 2.0});
 kf.update(measurement);
-const linalg::Vector &state = kf.get_state();
-state.print();
+const linalg::Vector<STATE_DIM>& state = kf.get_state();
 ```
 
 #### Extended Kalman Filter
 ```cpp
-kfplusplus::ExtendedKalmanFilter ekf(4, 2);
-auto measurement_function = [](const linalg::Vector& state) {
+constexpr size_t STATE_DIM = 4;
+constexpr size_t MEASUREMENT_DIM = 2;
+
+kfplusplus::ExtendedKalmanFilter<STATE_DIM, MEASUREMENT_DIM> ekf;
+
+auto measurement_function = [](const linalg::Vector<STATE_DIM>& state) {
   // Non-linear measurement function example
-  return linalg::Vector({state(0), state(1)});
+  return linalg::Vector<MEASUREMENT_DIM>({state(0), state(1)});
 };
-auto jacobian_measurement = [](const linalg::Vector& state) {
+
+auto jacobian_measurement = [](const linalg::Vector<STATE_DIM>& state) {
   // Jacobian matrix of the measurement function
-  return linalg::Matrix({{1.0, 0.0, 0.0, 0.0}, {0.0, 1.0, 0.0, 0.0}});
+  return linalg::Matrix<MEASUREMENT_DIM, STATE_DIM>({
+    {1.0, 0.0, 0.0, 0.0}, 
+    {0.0, 1.0, 0.0, 0.0}
+  });
 };
-linalg::Vector measurement({5.0, 2.0});
+
+linalg::Vector<MEASUREMENT_DIM> measurement({5.0, 2.0});
 ekf.update(measurement, measurement_function, jacobian_measurement);
 ```
 
 ## Project Structure
-- `linalg.h` and `vector.cpp`, `matrix.cpp`: Linear Algebra Library implementation.
-- `kfplusplus.h` and `linear_kf.cpp`, `extended_kf.cpp`: Kalman and Extended Kalman Filters.
-- `test_vector.cpp` and `test_matrix.cpp`: Unit tests for vectors and matrices.
-- `examples/` folder includes examples for kalman filters
-- `CMakeLists.txt`: Build configuration.
-- `CMakePresets.json`: Presets for building with GCC.
+- `include/linalg.h`: Linear algebra library implementation (header-only)
+- `include/kfplusplus.h`: Kalman and Extended Kalman Filters (header-only)
+- `test/`: Unit tests for linear algebra and Kalman filter components
+- `examples/`: Example applications using the library
+- `CMakeLists.txt`: Build configuration
+- `CMakePresets.json`: Presets for building with GCC
 
 ## Future additions
-
 - Develop Kalman filter analysis tools.
 
 ## License

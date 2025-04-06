@@ -3,58 +3,54 @@
 
 TEST(MatrixTest, ConstructorAndAccess)
 {
-  linalg::Matrix mat(2, 3);
+  linalg::Matrix<2, 3> mat;
   mat(0, 0) = 1.0; mat(0, 1) = 2.0; mat(0, 2) = 3.0;
   mat(1, 0) = 4.0; mat(1, 1) = 5.0; mat(1, 2) = 6.0;
   
   EXPECT_EQ(mat(0, 0), 1.0);
   EXPECT_EQ(mat(0, 1), 2.0);
   EXPECT_EQ(mat(1, 2), 6.0);
-
-  EXPECT_THROW(mat(2, 0), std::out_of_range);
-  EXPECT_THROW(mat(0, 3), std::out_of_range);
 }
 
 TEST(MatrixTest, InitializerListConstructor)
 {
-    linalg::Matrix mat({ {2.0, 3.0},
-                         {1.0, 2.0} });
+  linalg::Matrix<2, 2> mat({ {2.0, 3.0},
+    {1.0, 2.0} });
 
-    EXPECT_EQ(mat.row_size(), 2);
-    EXPECT_EQ(mat.col_size(), 2);
+  EXPECT_EQ(mat.row_size(), 2);
+  EXPECT_EQ(mat.col_size(), 2);
 
-    EXPECT_EQ(mat(0, 0), 2.0);
-    EXPECT_EQ(mat(0, 1), 3.0);
-    EXPECT_EQ(mat(1, 0), 1.0);
-    EXPECT_EQ(mat(1, 1), 2.0);
+  EXPECT_EQ(mat(0, 0), 2.0);
+  EXPECT_EQ(mat(0, 1), 3.0);
+  EXPECT_EQ(mat(1, 0), 1.0);
+  EXPECT_EQ(mat(1, 1), 2.0);
 
-    linalg::Matrix mat2({ {1.0, 2.0, 3.0},
-                          {4.0, 5.0, 6.0} });
-    EXPECT_EQ(mat2.row_size(), 2);
-    EXPECT_EQ(mat2.col_size(), 3);
+  linalg::Matrix<2, 3> mat2({ {1.0, 2.0, 3.0},
+                              {4.0, 5.0, 6.0} });
 
-    EXPECT_EQ(mat2(0, 0), 1.0);
-    EXPECT_EQ(mat2(0, 1), 2.0);
-    EXPECT_EQ(mat2(0, 2), 3.0);
-    EXPECT_EQ(mat2(1, 0), 4.0);
-    EXPECT_EQ(mat2(1, 1), 5.0);
-    EXPECT_EQ(mat2(1, 2), 6.0);
+  EXPECT_EQ(mat2.row_size(), 2);
+  EXPECT_EQ(mat2.col_size(), 3);
 
-    EXPECT_THROW(linalg::Matrix({ {1.0, 2.0}, {3.0} }), std::invalid_argument);
+  EXPECT_EQ(mat2(0, 0), 1.0);
+  EXPECT_EQ(mat2(0, 1), 2.0);
+  EXPECT_EQ(mat2(0, 2), 3.0);
+  EXPECT_EQ(mat2(1, 0), 4.0);
+  EXPECT_EQ(mat2(1, 1), 5.0);
+  EXPECT_EQ(mat2(1, 2), 6.0);
 }
 
 TEST(MatrixTest, Addition)
 {
-  linalg::Matrix mat1({ {1.0, 2.0},
-                        {3.0, 4.0} });
+  linalg::Matrix<2, 2> mat1({ {1.0, 2.0},
+                              {3.0, 4.0} });
 
-  linalg::Matrix mat2({ {5.0, 6.0},
-                        {7.0, 8.0} });
+  linalg::Matrix<2, 2> mat2({ {5.0, 6.0},
+                              {7.0, 8.0} });
 
-  linalg::Matrix expected({ {6.0, 8.0},
-                            {10.0, 12.0} });
+  linalg::Matrix<2, 2> expected({ {6.0, 8.0},
+                                  {10.0, 12.0} });
 
-  linalg::Matrix result = mat1 + mat2;
+  linalg::Matrix<2, 2> result = mat1 + mat2;
 
   EXPECT_EQ(result.row_size(), expected.row_size());
   EXPECT_EQ(result.col_size(), expected.col_size());
@@ -70,16 +66,16 @@ TEST(MatrixTest, Addition)
 
 TEST(MatrixTest, Subtraction)
 {
-  linalg::Matrix mat1({ {5.0, 6.0},
-                        {7.0, 8.0} });
+  linalg::Matrix<2, 2> mat1({ {5.0, 6.0},
+                              {7.0, 8.0} });
 
-  linalg::Matrix mat2({ {1.0, 2.0},
-                        {3.0, 4.0} });
+  linalg::Matrix<2, 2> mat2({ {1.0, 2.0},
+                              {3.0, 4.0} });
 
-  linalg::Matrix expected({ {4.0, 4.0},
-                            {4.0, 4.0} });
+  linalg::Matrix<2, 2> expected({ {4.0, 4.0},
+                                  {4.0, 4.0} });
 
-  linalg::Matrix result = mat1 - mat2;
+  linalg::Matrix<2, 2> result = mat1 - mat2;
 
   EXPECT_EQ(result.row_size(), expected.row_size());
   EXPECT_EQ(result.col_size(), expected.col_size());
@@ -95,16 +91,16 @@ TEST(MatrixTest, Subtraction)
 
 TEST(MatrixTest, Multiplication)
 {
-  linalg::Matrix mat1({ {1.0, 2.0},
-                        {3.0, 4.0} });
+  linalg::Matrix<2, 2> mat1({ {1.0, 2.0},
+                              {3.0, 4.0} });
 
-  linalg::Matrix mat2({ {2.0, 0.0},
-                        {1.0, 2.0} });
+  linalg::Matrix<2, 2> mat2({ {2.0, 0.0},
+                              {1.0, 2.0} });
 
-  linalg::Matrix expected({ {4.0, 4.0},
-                            {10.0, 8.0} });
+  linalg::Matrix<2, 2> expected({ {4.0, 4.0},
+                                  {10.0, 8.0} });
 
-  linalg::Matrix result = mat1 * mat2;
+  linalg::Matrix<2, 2> result = mat1 * mat2;
 
   EXPECT_EQ(result.row_size(), expected.row_size());
   EXPECT_EQ(result.col_size(), expected.col_size());
@@ -120,14 +116,14 @@ TEST(MatrixTest, Multiplication)
 
 TEST(MatrixTest, VectorMultiplication)
 {
-  linalg::Matrix mat({ {1.0, 2.0},
-                       {3.0, 4.0} });
+  linalg::Matrix<2, 2> mat({ {1.0, 2.0},
+                             {3.0, 4.0} });
 
-  linalg::Vector vec({1.0, 2.0});
+  linalg::Vector<2> vec({1.0, 2.0});
 
-  linalg::Vector expected({5.0, 11.0});
+  linalg::Vector<2> expected({5.0, 11.0});
 
-  linalg::Vector result = mat * vec;
+  linalg::Vector<2> result = mat * vec;
 
   EXPECT_EQ(result.size(), expected.size());
 
@@ -139,14 +135,14 @@ TEST(MatrixTest, VectorMultiplication)
 
 TEST(MatrixTest, ScalarMultiplication)
 {
-  linalg::Matrix mat({ {1.0, 2.0},
-                       {3.0, 4.0} });
+  linalg::Matrix<2, 2> mat({ {1.0, 2.0},
+    {3.0, 4.0} });
 
   double scalar = 2.0;
-  linalg::Matrix expected({ {2.0, 4.0},
-                            {6.0, 8.0} });
+  linalg::Matrix<2, 2> expected({ {2.0, 4.0},
+                                  {6.0, 8.0} });
 
-  linalg::Matrix result = mat * scalar;
+  linalg::Matrix<2, 2> result = mat * scalar;
 
   EXPECT_EQ(result.row_size(), expected.row_size());
   EXPECT_EQ(result.col_size(), expected.col_size());
@@ -171,13 +167,13 @@ TEST(MatrixTest, ScalarMultiplication)
 
 TEST(MatrixTest, Transpose)
 {
-  linalg::Matrix mat1({ {4.0, 4.0},
-                        {10.0, 8.0} });
+  linalg::Matrix<2, 2> mat1({ {4.0, 4.0},
+                              {10.0, 8.0} });
 
-  linalg::Matrix mat1_expected({ {4.0, 10.0},
-                                 {4.0, 8.0} });
+  linalg::Matrix<2, 2> mat1_expected({ {4.0, 10.0},
+                                       {4.0, 8.0} });
 
-  linalg::Matrix transposed1 = mat1.transpose();
+  linalg::Matrix<2, 2> transposed1 = mat1.transpose();
 
   EXPECT_EQ(transposed1.row_size(), mat1_expected.row_size());
   EXPECT_EQ(transposed1.col_size(), mat1_expected.col_size());
@@ -190,13 +186,15 @@ TEST(MatrixTest, Transpose)
     }
   }
 
-  linalg::Matrix mat2({ {1.0, 2.0, 3.0},
-                        {4.0, 5.0, 6.0} });
-  linalg::Matrix mat2_expected({ {1.0, 4.0},
-                                 {2.0, 5.0},
-                                 {3.0, 6.0} });
+  linalg::Matrix<2, 3> mat2({ {1.0, 2.0, 3.0},
+                              {4.0, 5.0, 6.0} });
 
-  linalg::Matrix transposed2 = mat2.transpose();
+linalg::Matrix<3, 2> mat2_expected({ {1.0, 4.0},
+                                     {2.0, 5.0},
+                                     {3.0, 6.0} });
+
+linalg::Matrix<3, 2> transposed2 = mat2.transpose();
+
 
   EXPECT_EQ(transposed2.row_size(), mat2_expected.row_size());
   EXPECT_EQ(transposed2.col_size(), mat2_expected.col_size());
@@ -213,35 +211,35 @@ TEST(MatrixTest, Transpose)
 TEST(MatrixTest, DeterminantBaseCases)
 {
   // Test 1x1 matrix determinant
-  linalg::Matrix mat1({ {5.0} });
+  linalg::Matrix<1, 1> mat1({ {5.0} });
 
   EXPECT_DOUBLE_EQ(mat1.determinant(), 5.0);
 
   // Test 2x2 matrix determinant
-  linalg::Matrix mat2({ {1.0, 2.0},
-                        {3.0, 4.0} });
+  linalg::Matrix<2, 2> mat2({ {1.0, 2.0},
+                              {3.0, 4.0} });
 
   EXPECT_DOUBLE_EQ(mat2.determinant(), -2.0);
 }
 
 TEST(MatrixTest, Determinant)
 {
-  linalg::Matrix mat({ {6.0, 1.0, 1.0},
-                       {4.0, -2.0, 5.0},
-                       {2.0, 8.0, 7.0} });
+  linalg::Matrix<3, 3> mat({ {6.0, 1.0, 1.0},
+                             {4.0, -2.0, 5.0},
+                             {2.0, 8.0, 7.0} });
 
   EXPECT_DOUBLE_EQ(mat.determinant(), -306.0);
 }
 
 TEST(MatrixTest, Inversion)
 {
-  linalg::Matrix mat({ {4.0, 7.0},
-                       {2.0, 6.0} });
+  linalg::Matrix<2, 2> mat({ {4.0, 7.0},
+                             {2.0, 6.0} });
 
-  linalg::Matrix expected({ {0.6, -0.7},
-                            {-0.2, 0.4} });
+  linalg::Matrix<2, 2> expected({ {0.6, -0.7},
+                                  {-0.2, 0.4} });
 
-  linalg::Matrix inverted = mat.invert();
+  linalg::Matrix<2, 2> inverted = mat.invert();
 
   EXPECT_EQ(inverted.row_size(), expected.row_size());
   EXPECT_EQ(inverted.col_size(), expected.col_size());

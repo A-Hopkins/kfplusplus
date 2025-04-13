@@ -16,7 +16,11 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-enable_testing()
-add_subdirectory(test)
+if(BUILD_TESTING)
+  enable_testing()
+  add_subdirectory(test)
+endif()
 
-add_subdirectory(examples)
+if(BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()

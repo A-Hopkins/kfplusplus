@@ -58,11 +58,11 @@
  */
 
 #pragma once
-
 #include <array>
 #include <cassert>
 #include <cmath>
 #include <initializer_list>
+#include <iostream>
 
 namespace linalg 
 {

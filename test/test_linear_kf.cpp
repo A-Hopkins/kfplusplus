@@ -5,10 +5,9 @@ TEST(KalmanFilterTest, Initialization)
 {
   // Define dimensions as compile-time constants
   constexpr size_t STATE_DIM = 4;
-  constexpr size_t MEASUREMENT_DIM = 2;
 
   // Create KalmanFilter with template parameters
-  kfplusplus::KalmanFilter<STATE_DIM, MEASUREMENT_DIM> kf;
+  kfplusplus::KalmanFilter<STATE_DIM> kf;
 
   // Test initialization
   EXPECT_EQ(kf.get_state().size(), STATE_DIM);
@@ -42,10 +41,9 @@ TEST(KalmanFilterTest, PredictWithoutControl)
 {
   // Define dimensions as compile-time constants
   constexpr size_t STATE_DIM = 2;
-  constexpr size_t MEASUREMENT_DIM = 1;
 
   // Create KalmanFilter with template parameters
-  kfplusplus::KalmanFilter<STATE_DIM, MEASUREMENT_DIM> kf;
+  kfplusplus::KalmanFilter<STATE_DIM> kf;
 
   // Create fixed-size matrices with template parameters
   linalg::Matrix<STATE_DIM, STATE_DIM> F({{1.0, 1.0},
@@ -84,11 +82,10 @@ TEST(KalmanFilterTest, PredictWithControl)
 {
   // Define dimensions as compile-time constants
   constexpr size_t STATE_DIM = 2;
-  constexpr size_t MEASUREMENT_DIM = 1;
   constexpr size_t CONTROL_DIM = 1;
 
   // Create KalmanFilter with template parameters
-  kfplusplus::KalmanFilter<STATE_DIM, MEASUREMENT_DIM, CONTROL_DIM> kf;
+  kfplusplus::KalmanFilter<STATE_DIM, CONTROL_DIM> kf;
 
   // Create fixed-size matrices with template parameters
   linalg::Matrix<STATE_DIM, STATE_DIM> F({{1.0, 1.0},
@@ -150,13 +147,9 @@ TEST(KalmanFilterTest, Update)
   linalg::Matrix<MEASUREMENT_DIM, STATE_DIM> H({{1.0, 0.0}});
   linalg::Matrix<MEASUREMENT_DIM, MEASUREMENT_DIM> R({{0.1}});
 
-  // Set measurement parameters
-  kf.set_measurement_matrix(H);
-  kf.set_measurement_noise(R);
-
   // Perform update with measurement
   linalg::Vector<MEASUREMENT_DIM> measurement({1.5});
-  kf.update(measurement);
+  kf.update(measurement, H, R);
 
   // The expected state after update can be calculated by hand:
   // Innovation: y = z - H*x = 1.5 - [1 0]*[1, 2]^T = 1.5 - 1 = 0.5
@@ -182,7 +175,7 @@ TEST(KalmanFilterTest, EndToEndTracking)
   constexpr size_t MEASUREMENT_DIM = 1;   // [position]
   constexpr size_t CONTROL_DIM = 0;       // No control input
 
-  kfplusplus::KalmanFilter<STATE_DIM, MEASUREMENT_DIM, CONTROL_DIM> kf;
+  kfplusplus::KalmanFilter<STATE_DIM, CONTROL_DIM> kf;
 
   // State transition model (constant velocity)
   double dt = 1.0; // time step in seconds
@@ -199,11 +192,9 @@ TEST(KalmanFilterTest, EndToEndTracking)
 
   // Measurement model (we only measure position)
   linalg::Matrix<MEASUREMENT_DIM, STATE_DIM> H({{1.0, 0.0}});
-  kf.set_measurement_matrix(H);
 
   // Measurement noise
   linalg::Matrix<MEASUREMENT_DIM, MEASUREMENT_DIM> R({{0.1}});
-  kf.set_measurement_noise(R);
 
   // Initial state [position, velocity]
   linalg::Vector<STATE_DIM> initial_state({0.0, 1.0});
@@ -235,7 +226,7 @@ TEST(KalmanFilterTest, EndToEndTracking)
     
     // Update step
     linalg::Vector<MEASUREMENT_DIM> z({meas});
-    kf.update(z);
+    kf.update(z, H, R);
     
     // Store results
     estimated_positions.push_back(kf.get_state()(0));

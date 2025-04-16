@@ -23,6 +23,8 @@
  */
 
 #include <iostream>
+#include <vector>
+
 #include "kfplusplus.h"
 
 int main()
@@ -33,7 +35,7 @@ int main()
   constexpr size_t CONTROL_DIM = 2;      // ax, ay
 
   // Initialize Kalman Filter with template parameters
-  kfplusplus::KalmanFilter<STATE_DIM, MEASUREMENT_DIM, CONTROL_DIM> kf;
+  kfplusplus::KalmanFilter<STATE_DIM, CONTROL_DIM> kf;
 
   // Set transition matrix (assuming constant acceleration model)
   linalg::Matrix<STATE_DIM, STATE_DIM> transition_matrix({
@@ -58,7 +60,6 @@ int main()
     {1.0, 0.0, 0.0, 0.0},
     {0.0, 1.0, 0.0, 0.0}
   });
-  kf.set_measurement_matrix(measurement_matrix);
 
   // Set process noise covariance
   linalg::Matrix<STATE_DIM, STATE_DIM> process_noise = 
@@ -68,7 +69,6 @@ int main()
   // Set measurement noise covariance
   linalg::Matrix<MEASUREMENT_DIM, MEASUREMENT_DIM> measurement_noise = 
       linalg::Matrix<MEASUREMENT_DIM, MEASUREMENT_DIM>::identity() * 0.1;
-  kf.set_measurement_noise(measurement_noise);
 
   // Initial state (x=0, y=0, vx=1, vy=1)
   linalg::Vector<STATE_DIM> initial_state({0.0, 0.0, 1.0, 1.0});
@@ -102,7 +102,7 @@ int main()
     kf.predict(controls[i]);
 
     // Update step with the new measurement
-    kf.update(measurements[i]);
+    kf.update<MEASUREMENT_DIM>(measurements[i], measurement_matrix, measurement_noise);
 
     // Get and print the updated state
     const linalg::Vector<STATE_DIM>& state = kf.get_state();

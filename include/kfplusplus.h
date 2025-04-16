@@ -21,10 +21,11 @@ namespace kfplusplus
    * @class KalmanFilter
    * @brief Implements a linear Kalman filter for state estimation with compile-time dimensions.
    * @tparam STATE_DIM Dimension of the state vector.
-   * @tparam MEASUREMENT_DIM Dimension of the measurement vector.
    * @tparam CONTROL_DIM Dimension of the control vector (defaults to 0).
+   *
+   * The update method is templated on MEASUREMENT_DIM, allowing measurements of arbitrary dimension.
    */
-  template<size_t STATE_DIM, size_t MEASUREMENT_DIM, size_t CONTROL_DIM = 0>
+  template<size_t STATE_DIM, size_t CONTROL_DIM = 0>
   class KalmanFilter
   {
   public:
@@ -36,10 +37,8 @@ namespace kfplusplus
       state(),  // Zero-initialized by default
       covariance(linalg::Matrix<STATE_DIM, STATE_DIM>::identity()),
       transition_matrix(linalg::Matrix<STATE_DIM, STATE_DIM>::identity()),
-      measurement_matrix(),  // Zero-initialized by default
       control_matrix(),      // Zero-initialized by default
-      process_noise(linalg::Matrix<STATE_DIM, STATE_DIM>::identity()),
-      measurement_noise(linalg::Matrix<MEASUREMENT_DIM, MEASUREMENT_DIM>::identity())
+      process_noise(linalg::Matrix<STATE_DIM, STATE_DIM>::identity()))
     { }
 
     /**
@@ -82,6 +81,8 @@ namespace kfplusplus
      * predicted and actual measurement), the Kalman gain, and updates the state 
      * and covariance accordingly.
      *
+     * This method is templated on MEASUREMENT_DIM, allowing measurements of arbitrary dimension.
+     *
      * Equations:
      * - Innovation: y = z - H * x
      * - Innovation covariance: S = H * P * H^T + R
@@ -91,8 +92,13 @@ namespace kfplusplus
      *
      * @param measurement The measurement vector, z, representing the observed 
      *                    data to incorporate into the state estimate.
+     * @param measurement_matrix The measurement matrix, H.
+     * @param measurement_noise The measurement noise covariance matrix, R.
      */
-    void update(const linalg::Vector<MEASUREMENT_DIM>& measurement)
+    template<size_t MEASUREMENT_DIM>
+    void update(const linalg::Vector<MEASUREMENT_DIM>& measurement,
+                const linalg::Matrix<MEASUREMENT_DIM, STATE_DIM>& measurement_matrix,
+                const linalg::Matrix<MEASUREMENT_DIM, MEASUREMENT_DIM>& measurement_noise)
     {
       static_assert(MEASUREMENT_DIM > 0, "Measurement dimension must be greater than 0");
       
@@ -161,42 +167,28 @@ namespace kfplusplus
      */
     void set_process_noise(const linalg::Matrix<STATE_DIM, STATE_DIM>& process_noise_matrix) { this->process_noise = process_noise_matrix; }
 
-    /**
-     * @brief Sets the measurement matrix.
-     * @param measurement_matrix The new measurement matrix.
-     */
-    void set_measurement_matrix(const linalg::Matrix<MEASUREMENT_DIM, STATE_DIM>& measurement_matrix) { this->measurement_matrix = measurement_matrix; }
-
-    /**
-     * @brief Sets the measurement noise covariance matrix.
-     * @param measurement_noise_matrix The new measurement noise covariance matrix.
-     */
-    void set_measurement_noise(const linalg::Matrix<MEASUREMENT_DIM, MEASUREMENT_DIM>& measurement_noise_matrix) { this->measurement_noise = measurement_noise_matrix; }
-
   protected:
     linalg::Vector<STATE_DIM> state;                                    ///< State vector, x
     linalg::Matrix<STATE_DIM, STATE_DIM> covariance;                    ///< Uncertainty covariance matrix, P
     linalg::Matrix<STATE_DIM, STATE_DIM> transition_matrix;             ///< State transition matrix, F
-    linalg::Matrix<MEASUREMENT_DIM, STATE_DIM> measurement_matrix;      ///< Measurement/Observation matrix, H
     linalg::Matrix<STATE_DIM, CONTROL_DIM> control_matrix;              ///< Control transition matrix, B 
     linalg::Matrix<STATE_DIM, STATE_DIM> process_noise;                 ///< Process noise covariance matrix, Q
-    linalg::Matrix<MEASUREMENT_DIM, MEASUREMENT_DIM> measurement_noise; ///< Measurement noise covariance matrix, R
   };
 
   /**
    * @class ExtendedKalmanFilter
    * @brief Implements an Extended Kalman Filter (EKF) for state estimation in non-linear systems.
    * @tparam STATE_DIM Dimension of the state vector.
-   * @tparam MEASUREMENT_DIM Dimension of the measurement vector.
    * @tparam CONTROL_DIM Dimension of the control vector (defaults to 0).
    *
    * The ExtendedKalmanFilter class extends the functionality of the KalmanFilter
-   * to handle non-linear state transitions and measurements. It uses Jacobians
-   * to linearize the system around the current state estimate for each predict
-   * and update step.
+   * to handle non-linear state transitions and measurements. The update method is
+   * templated on MEASUREMENT_DIM, allowing measurements of arbitrary dimension.
+   * It uses Jacobians to linearize the system around the current state estimate
+   * for each predict and update step.
    */
-  template<size_t STATE_DIM, size_t MEASUREMENT_DIM, size_t CONTROL_DIM = 0>
-  class ExtendedKalmanFilter : public KalmanFilter<STATE_DIM, MEASUREMENT_DIM, CONTROL_DIM>
+  template<size_t STATE_DIM, size_t CONTROL_DIM = 0>
+  class ExtendedKalmanFilter : public KalmanFilter<STATE_DIM, CONTROL_DIM>
   {
   public:
     /**
@@ -205,13 +197,15 @@ namespace kfplusplus
      * Inherits the initialization of state, covariance, and other matrices from
      * the base KalmanFilter class.
      */
-    ExtendedKalmanFilter() : KalmanFilter<STATE_DIM, MEASUREMENT_DIM, CONTROL_DIM>() {}
+    ExtendedKalmanFilter() : KalmanFilter<STATE_DIM, CONTROL_DIM>() {}
 
     /**
      * @brief Performs the update step of the Extended Kalman Filter (EKF).
      * 
      * The update step incorporates a new measurement to correct the predicted 
      * state and covariance using a non-linear measurement function and its Jacobian.
+     *
+     * This method is templated on MEASUREMENT_DIM, allowing measurements of arbitrary dimension.
      *
      * Equations:
      * - Innovation: y = z - h(x)
@@ -221,43 +215,46 @@ namespace kfplusplus
      * - Updated covariance: P = (I - K * H) * P
      *
      * @param measurement The observed measurement vector, z.
+     * @param measurement_noise The measurement noise covariance matrix, R.
      * @param measurement_function Non-linear measurement function, h(x).
      * @param jacobian_measurement Jacobian of the measurement function, H(x).
      */
+    template<size_t MEASUREMENT_DIM>
     void update(
       const linalg::Vector<MEASUREMENT_DIM>& measurement,
+      const linalg::Matrix<MEASUREMENT_DIM, MEASUREMENT_DIM>& measurement_noise,
       const std::function<linalg::Vector<MEASUREMENT_DIM>(const linalg::Vector<STATE_DIM>&)>& measurement_function,
       const std::function<linalg::Matrix<MEASUREMENT_DIM, STATE_DIM>(const linalg::Vector<STATE_DIM>&)>& jacobian_measurement)
     {
       static_assert(MEASUREMENT_DIM > 0, "Measurement dimension must be greater than 0");
       
       // Compute the predicted measurement: h(x)
-      linalg::Vector<MEASUREMENT_DIM> h_x = measurement_function(this->state);
+      linalg::Vector<MEASUREMENT_DIM> h_x = measurement_function(state);
       
       // Compute the innovation (residual): y = z - h(x)
       linalg::Vector<MEASUREMENT_DIM> y = measurement - h_x;
       
       // Compute the Jacobian of the measurement function: H
-      linalg::Matrix<MEASUREMENT_DIM, STATE_DIM> H = jacobian_measurement(this->state);
+      linalg::Matrix<MEASUREMENT_DIM, STATE_DIM> H = jacobian_measurement(state);
       
       // Transpose of Jacobian
       linalg::Matrix<STATE_DIM, MEASUREMENT_DIM> Ht = H.transpose();
       
       // Predicted covariance mapped to measurement space: P * H^T
-      linalg::Matrix<STATE_DIM, MEASUREMENT_DIM> PHt = this->covariance * Ht;
+      linalg::Matrix<STATE_DIM, MEASUREMENT_DIM> PHt = covariance * Ht;
       
       // Innovation covariance S = H * P * H^T + R
-      linalg::Matrix<MEASUREMENT_DIM, MEASUREMENT_DIM> S = H * PHt + this->measurement_noise;
+      linalg::Matrix<MEASUREMENT_DIM, MEASUREMENT_DIM> S = H * PHt + measurement_noise;
       
       // Kalman gain: K = P * H^T * (H * P * H^T + R)^-1
       linalg::Matrix<STATE_DIM, MEASUREMENT_DIM> K = PHt * S.invert();
       
       // Update the state estimate: x = x + K * y
-      this->state = this->state + K * y;
+      state = state + K * y;
       
       // Update the covariance: P = (I - K * H) * P
       linalg::Matrix<STATE_DIM, STATE_DIM> I = linalg::Matrix<STATE_DIM, STATE_DIM>::identity();
-      this->covariance = (I - K * H) * this->covariance;
+      covariance = (I - K * H) * covariance;
     }
 
     /**
@@ -273,13 +270,13 @@ namespace kfplusplus
       const linalg::Vector<CONTROL_DIM>& control = linalg::Vector<CONTROL_DIM>())
     {
       // Update state with non-linear function
-      this->state = state_transition_function(this->state, control);
+      state = state_transition_function(state, control);
       
       // Linearize around current state with Jacobian
-      linalg::Matrix<STATE_DIM, STATE_DIM> F = jacobian_transition(this->state, control);
+      linalg::Matrix<STATE_DIM, STATE_DIM> F = jacobian_transition(state, control);
       
       // Update covariance using linearized transition model
-      this->covariance = F * this->covariance * F.transpose() + this->process_noise;
+      covariance = F * covariance * F.transpose() + process_noise;
     }
   };
 }

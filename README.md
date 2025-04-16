@@ -89,7 +89,7 @@ linalg::Matrix<2, 2> result = mat * identity;
 constexpr size_t STATE_DIM = 4;
 constexpr size_t MEASUREMENT_DIM = 2;
 
-kfplusplus::KalmanFilter<STATE_DIM, MEASUREMENT_DIM> kf;
+kfplusplus::KalmanFilter<STATE_DIM> kf;
 linalg::Matrix<STATE_DIM, STATE_DIM> transition({
     {1.0, 0.0, 0.1, 0.0}, 
     {0.0, 1.0, 0.0, 0.1}, 
@@ -98,8 +98,16 @@ linalg::Matrix<STATE_DIM, STATE_DIM> transition({
 });
 kf.set_transition(transition);
 
+linalg::Matrix<MEASUREMENT_DIM, STATE_DIM> measurement_matrix({
+    {1.0, 0.0, 0.0, 0.0},
+    {0.0, 1.0, 0.0, 0.0}
+});
+
+linalg::Matrix<MEASUREMENT_DIM, MEASUREMENT_DIM> measurement_noise =
+    linalg::Matrix<MEASUREMENT_DIM, MEASUREMENT_DIM>::identity() * 0.1; // Example noise
+
 linalg::Vector<MEASUREMENT_DIM> measurement({5.0, 2.0});
-kf.update(measurement);
+kf.update<MEASUREMENT_DIM>(measurement, measurement_matrix, measurement_noise);
 const linalg::Vector<STATE_DIM>& state = kf.get_state();
 ```
 
@@ -108,23 +116,37 @@ const linalg::Vector<STATE_DIM>& state = kf.get_state();
 constexpr size_t STATE_DIM = 4;
 constexpr size_t MEASUREMENT_DIM = 2;
 
-kfplusplus::ExtendedKalmanFilter<STATE_DIM, MEASUREMENT_DIM> ekf;
+kfplusplus::ExtendedKalmanFilter<STATE_DIM> ekf; // Note: MEASUREMENT_DIM is not a template parameter for the class itself
 
-auto measurement_function = [](const linalg::Vector<STATE_DIM>& state) {
-  // Non-linear measurement function example
+auto measurement_function = [](const linalg::Vector<STATE_DIM>& state)
+{
+  // Non-linear measurement function example: h(x)
+  // Directly observes the first two state variables (e.g., position)
   return linalg::Vector<MEASUREMENT_DIM>({state(0), state(1)});
 };
 
-auto jacobian_measurement = [](const linalg::Vector<STATE_DIM>& state) {
-  // Jacobian matrix of the measurement function
+auto jacobian_measurement = [](const linalg::Vector<STATE_DIM>& state)
+{
+  // Jacobian matrix of the measurement function: H(x)
+  // Partial derivatives of h(x) with respect to state variables
   return linalg::Matrix<MEASUREMENT_DIM, STATE_DIM>({
-    {1.0, 0.0, 0.0, 0.0}, 
+    {1.0, 0.0, 0.0, 0.0},
     {0.0, 1.0, 0.0, 0.0}
   });
 };
 
+// Define measurement vector (z)
 linalg::Vector<MEASUREMENT_DIM> measurement({5.0, 2.0});
-ekf.update(measurement, measurement_function, jacobian_measurement);
+
+// Define measurement noise covariance matrix (R)
+linalg::Matrix<MEASUREMENT_DIM, MEASUREMENT_DIM> measurement_noise =
+    linalg::Matrix<MEASUREMENT_DIM, MEASUREMENT_DIM>::identity() * 0.1; // Example noise
+
+// Perform the EKF update step
+ekf.update<MEASUREMENT_DIM>(measurement, measurement_noise, measurement_function, jacobian_measurement);
+
+// Get the updated state
+const linalg::Vector<STATE_DIM>& state = ekf.get_state();
 ```
 
 ## Project Structure

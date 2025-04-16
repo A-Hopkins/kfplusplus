@@ -24,6 +24,7 @@
  */
 
 #include <iostream>
+#include <vector>
 #include <cmath>
 
 #include "kfplusplus.h"
@@ -37,7 +38,7 @@ int main()
   const double dt = 1.0; // Time step in seconds
 
   // Initialize the EKF with template parameters
-  kfplusplus::ExtendedKalmanFilter<STATE_DIM, MEASUREMENT_DIM> ekf;
+  kfplusplus::ExtendedKalmanFilter<STATE_DIM> ekf;
 
   // Set the initial state: [x, y, vx, vy]
   linalg::Vector<STATE_DIM> initial_state({1000.0, 1000.0, 100.0, 50.0});
@@ -64,7 +65,6 @@ int main()
   
   ekf.set_covariance(initial_covariance);
   ekf.set_process_noise(process_noise);
-  ekf.set_measurement_noise(measurement_noise);
 
   // Define the non-linear measurement function
   auto measurement_function = [](const linalg::Vector<STATE_DIM>& state) {
@@ -107,7 +107,7 @@ int main()
     ekf.predict();
 
     // Update the state with the measurement
-    ekf.update(measurements[i], measurement_function, jacobian_measurement);
+    ekf.update<MEASUREMENT_DIM>(measurements[i], measurement_noise, measurement_function, jacobian_measurement);
 
     // Get the updated state
     const linalg::Vector<STATE_DIM>& state = ekf.get_state();

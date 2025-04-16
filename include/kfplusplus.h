@@ -38,7 +38,7 @@ namespace kfplusplus
       covariance(linalg::Matrix<STATE_DIM, STATE_DIM>::identity()),
       transition_matrix(linalg::Matrix<STATE_DIM, STATE_DIM>::identity()),
       control_matrix(),      // Zero-initialized by default
-      process_noise(linalg::Matrix<STATE_DIM, STATE_DIM>::identity()))
+      process_noise(linalg::Matrix<STATE_DIM, STATE_DIM>::identity())
     { }
 
     /**
@@ -168,11 +168,11 @@ namespace kfplusplus
     void set_process_noise(const linalg::Matrix<STATE_DIM, STATE_DIM>& process_noise_matrix) { this->process_noise = process_noise_matrix; }
 
   protected:
-    linalg::Vector<STATE_DIM> state;                                    ///< State vector, x
-    linalg::Matrix<STATE_DIM, STATE_DIM> covariance;                    ///< Uncertainty covariance matrix, P
-    linalg::Matrix<STATE_DIM, STATE_DIM> transition_matrix;             ///< State transition matrix, F
-    linalg::Matrix<STATE_DIM, CONTROL_DIM> control_matrix;              ///< Control transition matrix, B 
-    linalg::Matrix<STATE_DIM, STATE_DIM> process_noise;                 ///< Process noise covariance matrix, Q
+    linalg::Vector<STATE_DIM> state;                         ///< State vector, x
+    linalg::Matrix<STATE_DIM, STATE_DIM> covariance;         ///< Uncertainty covariance matrix, P
+    linalg::Matrix<STATE_DIM, STATE_DIM> transition_matrix;  ///< State transition matrix, F
+    linalg::Matrix<STATE_DIM, CONTROL_DIM> control_matrix;   ///< Control transition matrix, B 
+    linalg::Matrix<STATE_DIM, STATE_DIM> process_noise;      ///< Process noise covariance matrix, Q
   };
 
   /**
@@ -229,19 +229,19 @@ namespace kfplusplus
       static_assert(MEASUREMENT_DIM > 0, "Measurement dimension must be greater than 0");
       
       // Compute the predicted measurement: h(x)
-      linalg::Vector<MEASUREMENT_DIM> h_x = measurement_function(state);
+      linalg::Vector<MEASUREMENT_DIM> h_x = measurement_function(this->state);
       
       // Compute the innovation (residual): y = z - h(x)
       linalg::Vector<MEASUREMENT_DIM> y = measurement - h_x;
       
       // Compute the Jacobian of the measurement function: H
-      linalg::Matrix<MEASUREMENT_DIM, STATE_DIM> H = jacobian_measurement(state);
+      linalg::Matrix<MEASUREMENT_DIM, STATE_DIM> H = jacobian_measurement(this->state);
       
       // Transpose of Jacobian
       linalg::Matrix<STATE_DIM, MEASUREMENT_DIM> Ht = H.transpose();
       
       // Predicted covariance mapped to measurement space: P * H^T
-      linalg::Matrix<STATE_DIM, MEASUREMENT_DIM> PHt = covariance * Ht;
+      linalg::Matrix<STATE_DIM, MEASUREMENT_DIM> PHt = this->covariance * Ht;
       
       // Innovation covariance S = H * P * H^T + R
       linalg::Matrix<MEASUREMENT_DIM, MEASUREMENT_DIM> S = H * PHt + measurement_noise;
@@ -250,11 +250,11 @@ namespace kfplusplus
       linalg::Matrix<STATE_DIM, MEASUREMENT_DIM> K = PHt * S.invert();
       
       // Update the state estimate: x = x + K * y
-      state = state + K * y;
+      this->state = this->state + K * y;
       
       // Update the covariance: P = (I - K * H) * P
       linalg::Matrix<STATE_DIM, STATE_DIM> I = linalg::Matrix<STATE_DIM, STATE_DIM>::identity();
-      covariance = (I - K * H) * covariance;
+      this->covariance = (I - K * H) * this->covariance;
     }
 
     /**
@@ -270,13 +270,13 @@ namespace kfplusplus
       const linalg::Vector<CONTROL_DIM>& control = linalg::Vector<CONTROL_DIM>())
     {
       // Update state with non-linear function
-      state = state_transition_function(state, control);
+      this->state = state_transition_function(this->state, control);
       
       // Linearize around current state with Jacobian
-      linalg::Matrix<STATE_DIM, STATE_DIM> F = jacobian_transition(state, control);
+      linalg::Matrix<STATE_DIM, STATE_DIM> F = jacobian_transition(this->state, control);
       
       // Update covariance using linearized transition model
-      covariance = F * covariance * F.transpose() + process_noise;
+      this->covariance = F * this->covariance * F.transpose() + this->process_noise;
     }
   };
 }

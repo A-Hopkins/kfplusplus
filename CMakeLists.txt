@@ -16,6 +16,9 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
+option(BUILD_TESTING "Build and run unit tests" ON)
+option(BUILD_EXAMPLES "Build example programs" ON)
+
 if(BUILD_TESTING)
   enable_testing()
   add_subdirectory(test)

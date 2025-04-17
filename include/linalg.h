@@ -509,26 +509,54 @@ namespace linalg
       }
       else
       {
-        // For larger matrices, use recursive calculation with minors
-        double det = 0.0;
-        int sign = 1;
-        
-        for (size_t j = 0; j < COLS; ++j)
+        // LU decomposition with partial pivoting
+        std::array<std::array<double, COLS>, ROWS> lu = data;
+        std::array<size_t, ROWS> perm;
+
+        for (size_t i = 0; i < ROWS; ++i)
         {
-          // Create a submatrix by excluding the first row and j-th column
-          Matrix<ROWS-1, COLS-1> submatrix;
-          for (size_t row = 1; row < ROWS; ++row)
+          perm[i] = i;
+        }
+
+        int sign = 1;
+
+        for (size_t k = 0; k < ROWS; ++k)
+        {
+          // pivot selection
+          double maxVal = 0.0;
+          size_t  pivot = k;
+          for (size_t i = k; i < ROWS; ++i)
           {
-            size_t col_dest = 0;
-            for (size_t col = 0; col < COLS; ++col)
+            double v = std::abs(lu[i][k]);
+            if (v > maxVal)
             {
-              if (col == j) continue;
-              submatrix(row-1, col_dest++) = data[row][col];
+              maxVal = v;
+              pivot = i;
             }
           }
-            
-          det += sign * data[0][j] * submatrix.determinant();
-          sign = -sign;
+          assert(maxVal > 1e-12 && "Matrix is singular");
+          if (pivot != k)
+          {
+            std::swap(lu[k], lu[pivot]);
+            std::swap(perm[k], perm[pivot]);
+            sign = -sign;
+          }
+          // elimination
+          for (size_t i = k + 1; i < ROWS; ++i)
+          {
+            lu[i][k] /= lu[k][k];
+            for (size_t j = k + 1; j < ROWS; ++j)
+            {
+              lu[i][j] -= lu[i][k] * lu[k][j];
+            }
+          }
+        }
+
+        // determinant = sign * product of diagonal U
+        double det = sign;
+        for (size_t i = 0; i < ROWS; ++i)
+        {
+          det *= lu[i][i];
         }
         return det;
       }
@@ -547,7 +575,7 @@ namespace linalg
       
       // Check if the matrix is invertible (non-singular)
       double det = determinant();
-      assert(std::abs(det) > 1e-10 && "Matrix is singular and cannot be inverted");
+      assert(std::abs(det) > 1e-12 && "Matrix is singular and cannot be inverted");
       
       // For 1x1 matrix, simple reciprocal
       if constexpr (ROWS == 1)
@@ -561,92 +589,89 @@ namespace linalg
       {
         Matrix result;
         double inv_det = 1.0 / det;
-        result(0, 0) = data[1][1] * inv_det;
+        result(0, 0) =  data[1][1] * inv_det;
         result(0, 1) = -data[0][1] * inv_det;
         result(1, 0) = -data[1][0] * inv_det;
-        result(1, 1) = data[0][0] * inv_det;
+        result(1, 1) =  data[0][0] * inv_det;
         return result;
       }
-      // For larger matrices, use Gauss-Jordan elimination
+      // For larger we use LU to invert
       else
       {
-        // Create augmented matrix [A|I]
-        Matrix<ROWS, COLS*2> augmented;
-        
-        // Fill the left side with the original matrix
-        for (size_t i = 0; i < ROWS; ++i)
+        // 1. Factor A = P·L·U
+        std::array<std::array<double, COLS>, ROWS> lu = data;
+        std::array<size_t, ROWS> perm;
+        for (size_t i = 0; i < ROWS; ++i) perm[i] = i;
+
+        for (size_t k = 0; k < ROWS; ++k)
         {
-          for (size_t j = 0; j < COLS; ++j)
+          double maxVal = 0.0;
+          size_t  pivot = k;
+          for (size_t i = k; i < ROWS; ++i)
           {
-            augmented(i, j) = data[i][j];
-          }
-        }
-        
-        // Fill the right side with the identity matrix
-        for (size_t i = 0; i < ROWS; ++i)
-        {
-          augmented(i, i + COLS) = 1.0;
-        }
-        
-        // Gauss-Jordan elimination to transform left side to identity
-        for (size_t i = 0; i < ROWS; ++i)
-        {
-          // Find pivot (maximum element in current column)
-          size_t max_row = i;
-          double max_val = std::abs(augmented(i, i));
-          
-          for (size_t k = i + 1; k < ROWS; ++k)
-          {
-            if (std::abs(augmented(k, i)) > max_val)
+            double v = std::abs(lu[i][k]);
+            if (v > maxVal)
             {
-              max_val = std::abs(augmented(k, i));
-              max_row = k;
+              maxVal = v;
+              pivot = i;
             }
           }
-          
-          // Ensure pivot element is not too small
-          assert(max_val > 1e-10 && "Matrix is singular and cannot be inverted");
-          
-          // Swap rows if needed
-          if (max_row != i)
+          assert(maxVal > 1e-12 && "Matrix is singular");
+          if (pivot != k)
           {
-            for (size_t j = 0; j < COLS*2; ++j)
-            {
-              std::swap(augmented(i, j), augmented(max_row, j));
-            }
+            std::swap(lu[k], lu[pivot]);
+            std::swap(perm[k], perm[pivot]);
           }
-          
-          // Scale current row to make pivot = 1
-          double pivot = augmented(i, i);
-          for (size_t j = 0; j < COLS*2; ++j)
+          for (size_t i = k + 1; i < ROWS; ++i)
           {
-            augmented(i, j) /= pivot;
-          }
-          
-          // Eliminate other rows
-          for (size_t k = 0; k < ROWS; ++k)
-          {
-            if (k != i)
+            lu[i][k] /= lu[k][k];
+            for (size_t j = k + 1; j < ROWS; ++j)
             {
-              double factor = augmented(k, i);
-              for (size_t j = 0; j < COLS*2; ++j)
-              {
-                augmented(k, j) -= factor * augmented(i, j);
-              }
+              lu[i][j] -= lu[i][k] * lu[k][j];
             }
           }
         }
-        
-        // Extract the right side as the inverse matrix
+
+        // 2. Solve n right‑hand sides: A^-1*E = X -> P*L*U*X = E
         Matrix result;
-        for (size_t i = 0; i < ROWS; ++i)
+        for (size_t col = 0; col < COLS; ++col)
         {
-          for (size_t j = 0; j < COLS; ++j)
+          // build b = P·e_col
+          std::array<double, ROWS> b{};
+          for (size_t i = 0; i < ROWS; ++i)
           {
-            result(i, j) = augmented(i, j + COLS);
+            b[i] = (perm[i] == col ? 1.0 : 0.0);
+          }
+
+          // forward solve L·y = b
+          std::array<double, ROWS> y{};
+          for (size_t i = 0; i < ROWS; ++i)
+          {
+            double sum = b[i];
+            for (size_t j = 0; j < i; ++j)
+            {
+              sum -= lu[i][j] * y[j];
+            }
+            y[i] = sum;
+          }
+          // back solve U·x = y
+          std::array<double, ROWS> x{};
+          for (int i = int(ROWS) - 1; i >= 0; --i)
+          {
+            double sum = y[i];
+            for (size_t j = i + 1; j < ROWS; ++j)
+            {
+              sum -= lu[i][j] * x[j];
+            }
+            x[i] = sum / lu[i][i];
+          }
+          // write into result’s col-th column
+          for (size_t i = 0; i < ROWS; ++i)
+          {
+            result(i, col) = x[i];
           }
         }
-        
+
         return result;
       }
     }

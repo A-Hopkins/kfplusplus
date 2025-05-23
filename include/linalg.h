@@ -3,12 +3,13 @@
  * @brief Linear Algebra Library for Vectors and Matrices.
  *
  * This library provides basic functionalities for performing linear algebra
- * operations such as addition, subtraction, scalar multiplication, dot products,
- * and matrix-vector or matrix-matrix multiplication.
- * 
- * Uses fixed-size arrays with compile-time dimensions and assertions for error checking.
- * 
-* @section examples Examples
+ * operations such as addition, subtraction, scalar multiplication, dot
+ * products, and matrix-vector or matrix-matrix multiplication.
+ *
+ * Uses fixed-size arrays with compile-time dimensions and assertions for error
+ * checking.
+ *
+ * @section examples Examples
  *
  * **Accessing Matrix and Vector Elements Using operator():**
  * @code
@@ -64,14 +65,14 @@
 #include <initializer_list>
 #include <iostream>
 
-namespace linalg 
+namespace linalg
 {
   /**
    * @class Vector
    * @brief Represents a mathematical vector with fixed size N.
    * @tparam N The compile-time size of the vector.
    */
-  template<size_t N>
+  template <size_t N>
   class Vector
   {
   public:
@@ -232,7 +233,6 @@ namespace linalg
       std::cout << std::endl;
     }
 
-
   private:
     std::array<double, N> data; ///< Internal storage for vector elements.
   };
@@ -243,7 +243,7 @@ namespace linalg
    * @tparam ROWS Number of rows.
    * @tparam COLS Number of columns.
    */
-  template<size_t ROWS, size_t COLS>
+  template <size_t ROWS, size_t COLS>
   class Matrix
   {
   public:
@@ -265,7 +265,7 @@ namespace linalg
     Matrix(std::initializer_list<std::initializer_list<double>> values)
     {
       assert(values.size() == ROWS && "Matrix initializer must match row count");
-      
+
       auto row_it = values.begin();
       for (size_t i = 0; i < ROWS; ++i, ++row_it)
       {
@@ -281,7 +281,7 @@ namespace linalg
     static Matrix<ROWS, COLS> identity()
     {
       assert(ROWS == COLS && "Identity matrix must be square");
-      
+
       Matrix<ROWS, COLS> result;
       for (size_t i = 0; i < ROWS; ++i)
       {
@@ -391,7 +391,7 @@ namespace linalg
      * @param other The matrix to multiply with.
      * @return A new matrix representing the product.
      */
-    template<size_t OTHER_COLS>
+    template <size_t OTHER_COLS>
     Matrix<ROWS, OTHER_COLS> operator*(const Matrix<COLS, OTHER_COLS>& other) const
     {
       Matrix<ROWS, OTHER_COLS> result;
@@ -491,7 +491,7 @@ namespace linalg
     {
       // Square matrix check at compile time
       static_assert(ROWS == COLS, "Determinant can only be calculated for square matrices");
-      
+
       // Special cases for small matrices for better performance
       if constexpr (ROWS == 1)
       {
@@ -504,14 +504,14 @@ namespace linalg
       else if constexpr (ROWS == 3)
       {
         return data[0][0] * (data[1][1] * data[2][2] - data[1][2] * data[2][1]) -
-                data[0][1] * (data[1][0] * data[2][2] - data[1][2] * data[2][0]) +
-                data[0][2] * (data[1][0] * data[2][1] - data[1][1] * data[2][0]);
+               data[0][1] * (data[1][0] * data[2][2] - data[1][2] * data[2][0]) +
+               data[0][2] * (data[1][0] * data[2][1] - data[1][1] * data[2][0]);
       }
       else
       {
         // LU decomposition with partial pivoting
         std::array<std::array<double, COLS>, ROWS> lu = data;
-        std::array<size_t, ROWS> perm;
+        std::array<size_t, ROWS>                   perm;
 
         for (size_t i = 0; i < ROWS; ++i)
         {
@@ -524,14 +524,14 @@ namespace linalg
         {
           // pivot selection
           double maxVal = 0.0;
-          size_t  pivot = k;
+          size_t pivot  = k;
           for (size_t i = k; i < ROWS; ++i)
           {
             double v = std::abs(lu[i][k]);
             if (v > maxVal)
             {
               maxVal = v;
-              pivot = i;
+              pivot  = i;
             }
           }
           assert(maxVal > 1e-12 && "Matrix is singular");
@@ -572,11 +572,11 @@ namespace linalg
     {
       // Square matrix check at compile time
       static_assert(ROWS == COLS, "Matrix must be square to compute inverse");
-      
+
       // Check if the matrix is invertible (non-singular)
       double det = determinant();
       assert(std::abs(det) > 1e-12 && "Matrix is singular and cannot be inverted");
-      
+
       // For 1x1 matrix, simple reciprocal
       if constexpr (ROWS == 1)
       {
@@ -589,10 +589,10 @@ namespace linalg
       {
         Matrix result;
         double inv_det = 1.0 / det;
-        result(0, 0) =  data[1][1] * inv_det;
-        result(0, 1) = -data[0][1] * inv_det;
-        result(1, 0) = -data[1][0] * inv_det;
-        result(1, 1) =  data[0][0] * inv_det;
+        result(0, 0)   = data[1][1] * inv_det;
+        result(0, 1)   = -data[0][1] * inv_det;
+        result(1, 0)   = -data[1][0] * inv_det;
+        result(1, 1)   = data[0][0] * inv_det;
         return result;
       }
       // For larger we use LU to invert
@@ -600,20 +600,21 @@ namespace linalg
       {
         // 1. Factor A = P·L·U
         std::array<std::array<double, COLS>, ROWS> lu = data;
-        std::array<size_t, ROWS> perm;
-        for (size_t i = 0; i < ROWS; ++i) perm[i] = i;
+        std::array<size_t, ROWS>                   perm;
+        for (size_t i = 0; i < ROWS; ++i)
+          perm[i] = i;
 
         for (size_t k = 0; k < ROWS; ++k)
         {
           double maxVal = 0.0;
-          size_t  pivot = k;
+          size_t pivot  = k;
           for (size_t i = k; i < ROWS; ++i)
           {
             double v = std::abs(lu[i][k]);
             if (v > maxVal)
             {
               maxVal = v;
-              pivot = i;
+              pivot  = i;
             }
           }
           assert(maxVal > 1e-12 && "Matrix is singular");
@@ -707,11 +708,12 @@ namespace linalg
     /**
      * @brief Internal storage for matrix elements as a fixed-size 2D structure.
      *
-     * Each row of the matrix is represented as an inner `std::array<double, COLS>` within
-     * the outer `std::array` of size ROWS. The element at the `i`-th row and `j`-th column
-     * is accessed via `data[i][j]`. This implementation uses compile-time fixed-size arrays
-     * to avoid dynamic memory allocation.
+     * Each row of the matrix is represented as an inner `std::array<double,
+     * COLS>` within the outer `std::array` of size ROWS. The element at the
+     * `i`-th row and `j`-th column is accessed via `data[i][j]`. This
+     * implementation uses compile-time fixed-size arrays to avoid dynamic memory
+     * allocation.
      */
     std::array<std::array<double, COLS>, ROWS> data; ///< Internal storage for matrix elements.
   };
-}
+} // namespace linalg

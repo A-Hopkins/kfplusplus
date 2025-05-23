@@ -27,3 +27,15 @@ endif()
 if(BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()
+
+# Collect source files with glob only for custom targets
+file(GLOB_RECURSE ALL_SOURCE_FILES
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/examples/*.cpp")
+
+# Custom target for clang format utility
+add_custom_target(
+  clang_format
+  COMMAND clang-format -i ${ALL_SOURCE_FILES}
+)

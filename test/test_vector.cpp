@@ -86,3 +86,9 @@ TEST(VectorTest, DotProduct)
 
   EXPECT_DOUBLE_EQ(result, 1.0 * 4.0 + 2.0 * 5.0 + 3.0 * 6.0);
 }
+
+TEST(VectorTest, StrFunction)
+{
+  linalg::Vector<3> v({1.1, 2.2, 3.3});
+  EXPECT_EQ(v.str(), "[1.1, 2.2, 3.3]");
+}

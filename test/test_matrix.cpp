@@ -252,3 +252,11 @@ TEST(MatrixTest, Inversion)
     }
   }
 }
+
+TEST(MatrixTest, StrFunction)
+{
+  linalg::Matrix<2, 2> m({{1.0, 2.0}, {3.0, 4.0}});
+  std::string result = m.str();
+  EXPECT_TRUE(result.find("[1") != std::string::npos);  // Sanity check
+  EXPECT_TRUE(result.find("2") != std::string::npos);
+}

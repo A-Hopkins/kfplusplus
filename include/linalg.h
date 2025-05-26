@@ -64,6 +64,8 @@
 #include <cmath>
 #include <initializer_list>
 #include <iostream>
+#include <sstream>
+#include <string>
 
 namespace linalg
 {
@@ -231,6 +233,26 @@ namespace linalg
         std::cout << " " << data[i];
       }
       std::cout << std::endl;
+    }
+
+    /**
+     * @brief Converts to string
+     * @return String in the form "[x1, x2, ..., xN]".
+     */
+    std::string str() const
+    {
+      std::ostringstream oss;
+      oss << "[";
+      for (size_t i = 0; i < N; ++i)
+      {
+        oss << data[i];
+        if (i != N - 1)
+        {
+          oss << ", ";
+        }
+      }
+      oss << "]";
+      return oss.str();
     }
 
   private:
@@ -702,6 +724,37 @@ namespace linalg
         }
         std::cout << std::endl;
       }
+    }
+
+    /**
+     * @brief Returns a formatted string representation of the matrix.
+     * @return Multi-line string in the form:
+     * [ [r1c1, r1c2, ...],
+     *   [r2c1, r2c2, ...],
+     *   ... ]
+     */
+    std::string str() const
+    {
+      std::ostringstream oss;
+      oss << "[\n";
+      for (size_t i = 0; i < ROWS; ++i)
+      {
+        oss << "  [";
+        for (size_t j = 0; j < COLS; ++j)
+        {
+          oss << data[i][j];
+          if (j != COLS - 1)
+            oss << ", ";
+        }
+        oss << "]";
+        if (i != ROWS - 1)
+        {
+          oss << ",";
+        }
+        oss << "\n";
+      }
+      oss << "]";
+      return oss.str();
     }
 
   private:

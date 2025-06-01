@@ -1,0 +1,3 @@
+add_executable(nonlinear_analysis_example nonlinear_analysis_example.cpp)
+
+target_link_libraries(nonlinear_analysis_example PRIVATE kfplusplus)

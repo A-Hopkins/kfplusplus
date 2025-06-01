@@ -114,7 +114,7 @@ int main()
   for (size_t i = 0; i < steps; ++i)
   {
     // Predict step
-    ekf.predict_nonlinear(state_transition, jacobian_transition);
+    ekf.predict(state_transition, jacobian_transition);
 
     // Update step
     ekf.update<MEASUREMENT_DIM>(imu_measurements[i],

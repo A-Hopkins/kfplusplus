@@ -78,10 +78,23 @@ TEST(ExtendedKalmanFilterTest, NonLinearSystemSimulation)
   // but we still need to pass it to the update method.
   // ekf.set_measurement_noise(measurement_noise); // This method doesn't exist in the provided header
 
-  // Set state transition matrix for constant velocity model
-  linalg::Matrix<STATE_DIM, STATE_DIM> F({{1.0, 1.0},
-                                          {0.0, 1.0}});
-  ekf.set_transition(F); // Used by the linear predict() method
+  // Define non-linear state transition function (actually linear here)
+  auto state_transition = [](const linalg::Vector<STATE_DIM>& state,
+                            const linalg::Vector<CONTROL_DIM>& /*control*/)
+  {
+    linalg::Vector<STATE_DIM> next_state;
+    next_state(0) = state(0) + state(1); // x' = x + v
+    next_state(1) = state(1);            // v' = v
+    return next_state;
+  };
+
+  // Define Jacobian of the state transition function
+  auto jacobian_transition = [](const linalg::Vector<STATE_DIM>& /*state*/,
+                                const linalg::Vector<CONTROL_DIM>& /*control*/)
+  {
+    return linalg::Matrix<STATE_DIM, STATE_DIM>({{1.0, 1.0},
+                                                 {0.0, 1.0}});
+  };
 
   // Define non-linear measurement function (distance from origin)
   auto measurement_function = [](const linalg::Vector<STATE_DIM>& state)
@@ -111,7 +124,7 @@ TEST(ExtendedKalmanFilterTest, NonLinearSystemSimulation)
   // Process each measurement
   for (const auto& measurement : measurements)
   {
-    ekf.predict(); // Uses linear prediction based on F
+    ekf.predict(state_transition, jacobian_transition);
     // Correct update call signature
     ekf.update<MEASUREMENT_DIM>(measurement, measurement_noise, measurement_function, jacobian_measurement);
   }
@@ -143,7 +156,7 @@ TEST(ExtendedKalmanFilterTest, NonLinearStateTransition)
   // Set noise matrices
   linalg::Matrix<STATE_DIM, STATE_DIM> process_noise =
       linalg::Matrix<STATE_DIM, STATE_DIM>::identity() * 0.01;
-  // Measurement noise is needed if update is called, but not for predict_nonlinear only
+  // Measurement noise is needed if update is called, but not for predict only
   // linalg::Matrix<MEASUREMENT_DIM, MEASUREMENT_DIM> measurement_noise =
   //     linalg::Matrix<MEASUREMENT_DIM, MEASUREMENT_DIM>::identity() * 0.1;
 
@@ -187,7 +200,7 @@ TEST(ExtendedKalmanFilterTest, NonLinearStateTransition)
 
   // Use the non-linear prediction with a velocity of 1.0
   linalg::Vector<CONTROL_DIM> control({1.0});
-  ekf.predict_nonlinear(state_transition, jacobian_transition, control);
+  ekf.predict(state_transition, jacobian_transition, control);
 
   // Check the predicted state against the expected values
   const linalg::Vector<STATE_DIM>& predicted_state = ekf.get_state();

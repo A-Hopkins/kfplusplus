@@ -215,6 +215,9 @@ namespace kfplusplus
      */
     ExtendedKalmanFilter() : KalmanFilter<STATE_DIM, CONTROL_DIM>() {}
 
+    // Prevent use of linear predict in EKF
+    void predict(const linalg::Vector<CONTROL_DIM>& = linalg::Vector<CONTROL_DIM>()) = delete;
+
     /**
      * @brief Performs the update step of the Extended Kalman Filter (EKF).
      *
@@ -287,7 +290,7 @@ namespace kfplusplus
      * J_f(x, u).
      * @param control The control vector, u (optional).
      */
-    void predict_nonlinear(
+    void predict(
         const std::function<linalg::Vector<STATE_DIM>(const linalg::Vector<STATE_DIM>&,
                                                       const linalg::Vector<CONTROL_DIM>&)>&
             state_transition_function,

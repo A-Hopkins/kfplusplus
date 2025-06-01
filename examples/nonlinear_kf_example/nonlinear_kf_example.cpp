@@ -47,10 +47,27 @@ int main()
   linalg::Vector<STATE_DIM> initial_state({1000.0, 1000.0, 100.0, 50.0});
   ekf.set_state(initial_state);
 
-  // Set the state transition matrix (constant velocity model)
-  linalg::Matrix<STATE_DIM, STATE_DIM> transition_matrix(
-      {{1.0, 0.0, dt, 0.0}, {0.0, 1.0, 0.0, dt}, {0.0, 0.0, 1.0, 0.0}, {0.0, 0.0, 0.0, 1.0}});
-  ekf.set_transition(transition_matrix);
+  // Define the non-linear state transition function (constant velocity model)
+  auto state_transition_function = [dt](const linalg::Vector<STATE_DIM>& state,
+                                       const linalg::Vector<0>& /*control*/) {
+    linalg::Vector<STATE_DIM> next_state;
+    next_state(0) = state(0) + state(2) * dt; // x + vx*dt
+    next_state(1) = state(1) + state(3) * dt; // y + vy*dt
+    next_state(2) = state(2);                 // vx
+    next_state(3) = state(3);                 // vy
+    return next_state;
+  };
+
+  // Jacobian of the state transition function (constant velocity model)
+  auto jacobian_transition = [dt](const linalg::Vector<STATE_DIM>& /*state*/,
+                                  const linalg::Vector<0>& /*control*/) {
+    return linalg::Matrix<STATE_DIM, STATE_DIM>({
+        {1.0, 0.0, dt, 0.0},
+        {0.0, 1.0, 0.0, dt},
+        {0.0, 0.0, 1.0, 0.0},
+        {0.0, 0.0, 0.0, 1.0}
+    });
+  };
 
   // Set initial covariance and noise
   linalg::Matrix<STATE_DIM, STATE_DIM> initial_covariance =
@@ -103,7 +120,7 @@ int main()
   for (size_t i = 0; i < measurements.size(); ++i)
   {
     // Predict the next state
-    ekf.predict();
+    ekf.predict(state_transition_function, jacobian_transition);
 
     // Update the state with the measurement
     ekf.update<MEASUREMENT_DIM>(measurements[i], measurement_noise, measurement_function,

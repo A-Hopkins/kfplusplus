@@ -7,6 +7,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 add_library(kfplusplus INTERFACE)
 target_include_directories(kfplusplus INTERFACE include)
 
+add_subdirectory(extern/pybind11)
+# Only build bindings if requested
+option(BUILD_PYTHON_BINDINGS "Build Python bindings with pybind11" ON)
+
+if(BUILD_PYTHON_BINDINGS)
+  pybind11_add_module(kfplusplus_python bindings/bindings.cpp)
+  target_include_directories(kfplusplus_python PRIVATE include)
+  # If you have dependencies, link them here
+endif()
+
 include(FetchContent)
 FetchContent_Declare(
   googletest

@@ -769,4 +769,17 @@ namespace linalg
      */
     std::array<std::array<double, COLS>, ROWS> data; ///< Internal storage for matrix elements.
   };
+
+  /**
+   * @brief Computes the norm (magnitude) of a vector.
+   * @param v The vector to compute the norm for.
+   * @return The norm of the vector.
+   */
+  template <size_t N>
+  double norm(const Vector<N>& v)
+  {
+    assert(N > 0 && "Vector must have non-zero dimension for norm()");
+    return std::sqrt(v.dot(v));
+  }
+
 } // namespace linalg

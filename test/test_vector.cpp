@@ -92,3 +92,10 @@ TEST(VectorTest, StrFunction)
   linalg::Vector<3> v({1.1, 2.2, 3.3});
   EXPECT_EQ(v.str(), "[1.1, 2.2, 3.3]");
 }
+
+TEST(VectorTest, Norm)
+{
+  linalg::Vector<3> v({3.0, 4.0, 0.0});
+  double result = linalg::norm(v);
+  EXPECT_DOUBLE_EQ(result, 5.0);
+}

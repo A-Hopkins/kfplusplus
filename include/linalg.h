@@ -782,4 +782,24 @@ namespace linalg
     return std::sqrt(v.dot(v));
   }
 
+  /**
+   * @brief Checks if two vectors are almost equal within a given tolerance.
+   * @param a The first vector.
+   * @param b The second vector.
+   * @param eps The tolerance for comparison (default is 1e-6).
+   * @return True if the vectors are almost equal, false otherwise.
+   */
+  template <size_t N>
+  bool almost_equal(const Vector<N>& a, const Vector<N>& b, double eps = 1e-6)
+  {
+    for (size_t i = 0; i < N; ++i)
+    {
+      if (std::abs(a(i) - b(i)) > eps)
+      {
+        return false;
+      }
+    }
+    return true;
+  }
+
 } // namespace linalg

@@ -688,7 +688,7 @@ namespace linalg
             }
             x[i] = sum / lu[i][i];
           }
-          // write into result’s col-th column
+          // write into result's col-th column
           for (size_t i = 0; i < ROWS; ++i)
           {
             result(i, col) = x[i];
